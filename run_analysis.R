@@ -1,5 +1,6 @@
 library(data.table)
 library(dplyr)
+library(plyr)
 # ===============
 # Step 1
 # ===============
@@ -49,8 +50,18 @@ activity_labels <- c("WALKING",
 labels <- lapply(data$Activity, function(x) {
     activity_labels[x]
 })
-data$Activity <- labels
+data$Activity <- unlist(labels)
+data <- transform(data, Activity = as.factor(Activity), Subject = as.factor(Subject))
 
 # Step 4 was done at the beginning
 # Save the dataset
-save(data, file="UCI_HAR_Dataset_tidy.Rda")
+write.table(data, file="UCI_HAR_Dataset_tidy.txt", row.names=FALSE)
+
+# ===============
+# Step 5
+# ===============
+# we compute the mean for all the numerical columns by Subject, Activity
+mean_data <- ddply(data, .(Subject, Activity), numcolwise(mean))
+
+# save the new data frame
+write.table(mean_data, file="UCI_HAR_Dataset_averages_tidy.txt", row.names=FALSE)
